@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { firstValueFrom, Observable } from 'rxjs';
+import { firstValueFrom, forkJoin, map, Observable } from 'rxjs';
 import { Post } from '../interfaces/post';
 import { User } from '../interfaces/user';
 import { PostService } from '../services/post.service';
@@ -23,6 +23,7 @@ export class UserlistComponent implements OnInit {
 
   users$: Observable<User[]> = new Observable<User[]>();
   posts$: Observable<Post[]> = new Observable<Post[]>();
+  cards$: Observable<Card[]> = new Observable<Card[]>();
 
   constructor(
     private userService: UserService,
@@ -31,7 +32,8 @@ export class UserlistComponent implements OnInit {
 
   ngOnInit(): void {
     // this.initCardsWithSubscribes();
-    this.initCardsWithAsyncAwait();
+    // this.initCardsWithAsyncAwait();
+    this.initCardsWithForkJoin();
   }
 
   initCardsWithSubscribes() {
@@ -66,6 +68,31 @@ export class UserlistComponent implements OnInit {
         postCount,
       });
     });
+  }
+
+  initCardsWithForkJoin() {
+    this.users$ = this.userService.getUsers();
+    this.posts$ = this.postService.getPosts();
+
+    this.cards$ = forkJoin({
+      users: this.users$,
+      posts: this.posts$
+    }).pipe(
+      map((res) => {
+        let cards:Card[] = [];
+        res.users.forEach((u: User) => {
+          let postCount = res.posts.filter(
+            (p: Post) => p.userId === u.id
+          ).length;
+          cards.push({
+            name: u.name,
+            email: u.email,
+            postCount,
+          });
+        });
+        return cards;
+      })
+    );
   }
 
 

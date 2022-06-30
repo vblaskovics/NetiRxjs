@@ -1,0 +1,19 @@
+<div class="m-3">
+  <label for="uidInput">User id:</label>
+  <input
+    id="uidInput"
+    [(ngModel)]="userId"
+    (ngModelChange)="userInputChange()"
+    class="form-control"
+    type="text"
+  />
+</div>
+
+{{ userEmail$ | async }}
+
+<p *ngIf="userPostsCount$ | async">
+  Posts count: {{ userPostsCount$ | async }}
+</p>
+<p *ngIf="userTodosCount$ | async">
+  Todos count: {{ userTodosCount$ | async }}
+</p>
